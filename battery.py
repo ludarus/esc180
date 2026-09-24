@@ -141,10 +141,11 @@ def get_cur_battery_health() -> float:
 
 
 def charge_time_needed(minutes):
-    if duration_fast_charge_possible():  # 0 is falsy so treat as bool
-        rate = FC_PERCENT_RATE
+    if duration_fast_charge_possible() >= minutes:
+        rate = FC_TEMP_RATE
     else:
-        rate = SC_PERCENT_RATE
+        rate = 
+
     if minutes > 50:  # 100/2 fast charge per minute
         return None
     elif get_cur_charge() + minutes * DEPLETING_PERCENT_RATE >= 0:

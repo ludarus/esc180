@@ -10,7 +10,7 @@ BAD_HEALTH_LIMIT = 80  # in percent
 
 # fast charging
 FC_TEMP_RANGE = (0, 40)  # min temp, max temp
-FC_PERCENTAGE_RANGE = (0, 79)  # min percentage, max percentage
+FC_PERCENTAGE_RANGE = (0, 80)  # min percentage, max percentage
 FC_PERCENT_RATE = 3  # in percentage/minute
 FC_TEMP_RATE = 0.5  # in degrees/minute
 
@@ -24,22 +24,26 @@ IDLE_TEMP_RATE = -1  # in degrees/minute
 
 # usage
 DEPLETING_PERCENT_RATE = -2  # in percentage/minute
-DEPLETING_TEMP_RATE = -1  # in degrees/minute
+DEPLETING_TEMP_RATE = 1  # in degrees/minute
+
+DEAD_TEMP_RATE = -1
 
 
 # private functions
-def _change_battery(amount: int) -> None:
+def _change_battery(amount: float) -> None:
     global cur_battery
     cur_battery += (
-        min(cur_battery, amount)
+        max(amount, -cur_battery)
         if amount < 0
-        else min(100 if good_battery_health else BAD_HEALTH_LIMIT - cur_battery, amount)
+        else min(
+            (100 if good_battery_health else BAD_HEALTH_LIMIT) - cur_battery, amount
+        )
     )
 
 
-def _change_temp(amount: int) -> None:
+def _change_temp(amount: float) -> None:
     global cur_temp
-    cur_temp += min(cur_temp, amount) if amount < 0 else amount
+    cur_temp += max(-cur_temp, amount) if amount < 0 else amount
 
 
 def initialize() -> None:
@@ -58,9 +62,7 @@ def initialize() -> None:
     cur_battery = 50
     cur_temp = 20.0
     battery_state = STATE_IDLE
-    attempts_above_90 = (
-        []
-    )  # list of timestamps when you charged above 90. if the cur time - back > 60 * 6 = 360 minutes, kick it out of there. then if len(this) is 3, slow charging time
+    attempts_above_90 = []  # list of timestamps when you charged above 90. if the cur time - back > 60 * 6 = 360 minutes, kick it out of there. then if len(this) is 3, slow charging time
 
 
 def simulate_activity(activity, duration) -> None:
@@ -73,6 +75,8 @@ def simulate_activity(activity, duration) -> None:
     global cur_time
     global good_battery_health
     global battery_state
+    global attempts_above_90
+    global cur_battery
 
     # incrementing time
     cur_time += duration
@@ -81,49 +85,63 @@ def simulate_activity(activity, duration) -> None:
     match activity.lower():
         case "charge":
             # fast charging rate
-            fc_duration = duration_fast_charge_possible()
-            if fc_duration > 0:
-                battery_state = STATE_FASTCHARGING
-                _change_battery(fc_duration * FC_PERCENT_RATE)
-                _change_temp(fc_duration * FC_TEMP_RATE)
-                duration -= fc_duration
+            fc_duration = min(duration, duration_fast_charge_possible())
+            battery_state = STATE_FASTCHARGING
+            _change_battery(fc_duration * FC_PERCENT_RATE)
+            _change_temp(fc_duration * FC_TEMP_RATE)
+            duration -= fc_duration
 
-            if duration > 0:
-                battery_state = STATE_SLOWCHARGING
-                _change_battery(duration * SC_PERCENT_RATE)
-                _change_temp(duration * SC_TEMP_RATE)
+            battery_state = STATE_SLOWCHARGING
+            _change_battery(duration * SC_PERCENT_RATE)
+            _change_temp(duration * SC_TEMP_RATE)
+
+            if get_cur_charge() >= 90:
+                attempts_above_90.append(cur_time)
+
 
         case "use":
+            dur_until_dead = min(get_cur_charge() / abs(DEPLETING_PERCENT_RATE), duration)
+            dur_after_dead = duration - dur_until_dead
             battery_state = STATE_DEPLETING
             _change_battery(duration * DEPLETING_PERCENT_RATE)
-            _change_temp(duration * DEPLETING_TEMP_RATE)
+            _change_temp(dur_until_dead * DEPLETING_TEMP_RATE)
+            _change_temp(dur_after_dead * DEAD_TEMP_RATE)
 
         case "idle":
             battery_state = STATE_IDLE
             _change_battery(duration * IDLE_PERCENT_RATE)
             _change_temp(duration * IDLE_TEMP_RATE)
 
-    # resetting state
+     # resetting state
     battery_state = STATE_IDLE
 
     # battery health update
-    if get_cur_battery_health() and attempts_above_90:
-        if cur_time - attempts_above_90[0] > BATTERY_HEALTH_WINDOW:
-            _ = attempts_above_90.pop(0)
-        if len(attempts_above_90) >= 3:
-            good_battery_health = False
+    if get_cur_battery_health():
+        while (
+            attempts_above_90
+            and cur_time - attempts_above_90[0] > BATTERY_HEALTH_WINDOW
+        ):
+            attempts_above_90.pop(0)
+    if len(attempts_above_90) >= 3:
+        good_battery_health = False
 
+    # health just flipped mid-charge, so the battery would have stopped at 90
+    if not good_battery_health and cur_battery > 90:
+        cur_battery = 90
 
 def duration_fast_charge_possible() -> float:
     # Fast charging occurs when the temperature is between 0-40°C, battery charge is below 80%, and battery health is good.
-    if not get_cur_battery_health():
+    cur_charge = get_cur_charge()
+    if not get_cur_battery_health():  # health =0
         return 0
-    if get_cur_charge() >= BAD_HEALTH_LIMIT:
+    if cur_charge >= FC_PERCENTAGE_RANGE[1]:  # we cant fastcharge no more
         return 0
-    if not FC_TEMP_RANGE[0] <= (temp := get_cur_temp()) < FC_TEMP_RANGE[1]:
+    if (
+        not FC_TEMP_RANGE[0] <= (temp := get_cur_temp()) <= FC_TEMP_RANGE[1]
+    ):  # temp is in fc temp range
         return 0
     temp_time = (FC_TEMP_RANGE[1] - temp) / FC_TEMP_RATE
-    charge_time = (BAD_HEALTH_LIMIT - get_cur_charge()) / FC_PERCENT_RATE
+    charge_time = (FC_PERCENTAGE_RANGE[1] - cur_charge) / FC_PERCENT_RATE
     return min(temp_time, charge_time)
     # temp until 40
 
@@ -141,17 +159,25 @@ def get_cur_battery_health() -> float:
 
 
 def charge_time_needed(minutes):
-    if duration_fast_charge_possible() >= minutes:
-        rate = FC_TEMP_RATE
-    else:
-        rate = 
+    battery_needed = minutes * abs(DEPLETING_PERCENT_RATE)
+    battery_missing = battery_needed - get_cur_charge()
 
-    if minutes > 50:  # 100/2 fast charge per minute
-        return None
-    elif get_cur_charge() + minutes * DEPLETING_PERCENT_RATE >= 0:
+    if battery_missing <= 0:
         return 0
-    else:
-        return abs(get_cur_charge() + minutes * DEPLETING_PERCENT_RATE) / abs(rate)
+
+    max_battery = 100 if get_cur_battery_health() else BAD_HEALTH_LIMIT
+    if battery_needed > max_battery:
+        return None
+
+    fast_duration = duration_fast_charge_possible()
+    fast_charge_available = fast_duration * FC_PERCENT_RATE
+
+    if battery_missing <= fast_charge_available:
+        return battery_missing / FC_PERCENT_RATE
+
+    remaining = battery_missing - fast_charge_available
+
+    return fast_duration + remaining / SC_PERCENT_RATE
 
 
 if __name__ == "__main__":

@@ -9,7 +9,7 @@ def leibniz_pi_over_4(iterations: int) -> float:
 def leibniz_pi_over_4_while(iterations: int) -> float:
     res: float = 0
     i = 0
-    while i < iterations:
+    while i <= iterations:
         numerator: int = (-1) ** i
         denominator: int = 2 * i + 1
         res += numerator/denominator

@@ -69,7 +69,6 @@ def make_better_move(board, mark):
 
 
 def make_best_move(board, mark):
-    """Place the best move using minimax; leave finished boards unchanged."""
     opponent = "O" if mark == "X" else "X"
 
     def score(position, turn, depth):

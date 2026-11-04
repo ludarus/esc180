@@ -1,6 +1,5 @@
 import numpy as np
 
-
 # Printing matrices using NumPy:
 
 # Convert a list of lists into an array:
@@ -15,11 +14,11 @@ print(M)
 #Compute M*x for matrix M and vector x by using
 #dot. To do that, we need to obtain arrays
 #M and x
-M = np.array([[1,-2,3],[3,10,1],[1,5,3]])
+N = np.array([[1,-2,3],[3,10,1],[1,5,3]])
 x = np.array([75,10,-11])
 b = np.matmul(M,x)
 
-print(M)
+print(N)
 #[[ 1 -2  3]
 # [ 3 10  1]
 # [ 1  5  3]]

@@ -1,0 +1,11 @@
+[project]
+name = "lab6"
+version = "0.1.0"
+description = "Add your description here"
+authors = [
+    { name = "RVZO6", email = "66844656+RVZO6@users.noreply.github.com" }
+]
+requires-python = ">=3.14"
+dependencies = [
+    "numpy>=2.5.4",
+]

@@ -21,9 +21,7 @@ def is_empty(board: list[list[str]]) -> bool:
 def is_in_bounds(board, y, x):
     return 0 <= y < len(board) and 0 <= x < len(board[y])
 
-
-def get_opp(player):
-    return "w" if player == "b" else "b"
+def get_opp(player): return "w" if player == "b" else "b"
 
 
 def is_bounded(
@@ -40,6 +38,7 @@ def is_bounded(
         if board[y_new][x_new] == opp:
             blocked[0] = True
     else:
+        # if not in bounds
         blocked[0] = True
     # right
     if is_in_bounds(board, (y_new := y_end + d_y), (x_new := x_end + d_x)):
@@ -118,6 +117,7 @@ def detect_rows(board: list[list[str]], col: str, length: int) -> tuple[int, int
 
 # trivial
 def search_max(board: list[list[str]]) -> tuple[int, int]:
+    # could do float -inf but ok
     best_score = None
     best_move = None
 
@@ -167,7 +167,7 @@ def is_win(board: list[list[str]]) -> str:
                     count += 1
                     cur_y += d_y
                     cur_x += d_x
-                if count == 5:
+                if count >= 5:
                     return "Black won" if player == "b" else "White won"
 
     # duh (no early draw detection because i dont wanna do that)

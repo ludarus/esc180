@@ -96,7 +96,7 @@ def run_similarity_test(
     lines = f.read().split("\n")
     n = len(lines)
     for l in lines:
-        if not l: # newline at end
+        if not l:  # newline at end
             n -= 1
             continue
         parts = l.split(" ")

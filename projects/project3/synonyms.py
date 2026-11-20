@@ -55,6 +55,8 @@ def build_semantic_descriptors_from_files(
         f = open(n, "r", encoding="latin1")
         text = f.read()
         f.close()
+        for punctuation in ",-:;":
+            text = text.replace(punctuation, " ")
         file_sentences = text.lower().replace("!", ".").replace("?", ".").split(".")
         for s in file_sentences:
             words = s.split()

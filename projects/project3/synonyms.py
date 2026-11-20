@@ -4,10 +4,9 @@ Author: Michael Guerzhoy. Last modified: Nov. 20, 2023.
 '''
 
 import math
-from collections.abc import Callable, Mapping
 
 
-def norm(vec: Mapping[str, float]) -> float:
+def norm(vec: dict[str, int]) -> float:
     '''Return the norm of a vector stored as a dictionary, as
     described in the handout for Project 3.
     '''
@@ -19,9 +18,7 @@ def norm(vec: Mapping[str, float]) -> float:
     return math.sqrt(sum_of_squares)
 
 
-def cosine_similarity(
-    vec1: Mapping[str, float], vec2: Mapping[str, float]
-) -> float:
+def cosine_similarity(vec1: dict[str, int], vec2: dict[str, int]) -> float:
     pass
 
 
@@ -41,7 +38,7 @@ def most_similar_word(
     word: str,
     choices: list[str],
     semantic_descriptors: dict[str, dict[str, int]],
-    similarity_fn: Callable[[dict[str, int], dict[str, int]], float],
+    similarity_fn,
 ) -> str:
     pass
 
@@ -49,6 +46,6 @@ def most_similar_word(
 def run_similarity_test(
     filename: str,
     semantic_descriptors: dict[str, dict[str, int]],
-    similarity_fn: Callable[[dict[str, int], dict[str, int]], float],
+    similarity_fn,
 ) -> float:
     pass

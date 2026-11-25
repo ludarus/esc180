@@ -238,5 +238,70 @@ def split_list(L, seps):
 
 
 if __name__ == "__main__":
-    # Add tests here as you implement each question.
-    pass
+    # Q1: times
+    assert times(2, 3) == 6
+    assert times(0, 5) == 0
+    assert times(5, 0) == 0
+    assert times(-2, 3) == -6
+
+    # Q2: digit_sum
+    assert digit_sum(123) == 6
+    assert digit_sum(0) == 0
+    assert digit_sum(999) == 27
+
+    # Q3: remainder
+    assert remainder(7, 3) == 1
+    assert remainder(6, 3) == 0
+    assert remainder(2, 5) == 2
+
+    # Q4: linear_search
+    assert linear_search([5, 8, 2, 9], 2) == 2
+    assert linear_search([5, 8, 2, 9], 5) == 0
+    assert linear_search([5, 8, 2, 9], 9) == 3
+
+    # Q5: interleave
+    assert interleave([1, 2, 3], ["a", "b", "c"]) == [1, "a", 2, "b", 3, "c"]
+    assert interleave([], []) == []
+
+    # Q6: reverse_rec
+    L = [1, 2, 3, 4]
+    assert reverse_rec(L) is None and L == [4, 3, 2, 1]
+    L2 = [1, 2, 3]
+    reverse_rec(L2)
+    assert L2 == [3, 2, 1]
+    L3 = []
+    reverse_rec(L3)
+    assert L3 == []
+
+    # Q7: print_from_middle
+    print_from_middle([0, 1, 2, 3, 4, 5, 6])  # Expected: 3 2 4 1 5 0 6
+
+    # Q8: LLM practice problems
+    assert count_occurrences([1, 2, 1, 3, 1], 1) == 3
+    assert count_occurrences([], 5) == 0
+    assert count_occurrences(["a", "b", "a"], "c") == 0
+    assert count_occurrences_gemini([1, 2, 1, 3, 1], 1) == 3
+    assert count_occurrences_gemini([], 5) == 0
+    assert count_occurrences_gemini(["a", "b", "a"], "c") == 0
+
+    assert is_palindrome("racecar") is True
+    assert is_palindrome("ab") is False
+    assert is_palindrome("") is True
+    assert is_palindrome_gemini("racecar") is True
+    assert is_palindrome_gemini("ab") is False
+    assert is_palindrome_gemini("") is True
+
+    assert count_paths(2, 2) == 2
+    assert count_paths(3, 3) == 6
+    assert count_paths(1, 5) == 1
+    assert count_paths_gemini(2, 2) == 2
+    assert count_paths_gemini(3, 3) == 6
+    assert count_paths_gemini(1, 5) == 1
+
+    # Q9: split_list
+    assert split_list([1, 2, 6, 4, 5, 3, 7], [3, 6]) == [[1, 2], [4, 5], [7]]
+    assert split_list([3, 1, 2, 6, 3, 4, 6], [3, 6]) == [[1, 2], [4]]
+    assert split_list([1, 2, 3], []) == [[1, 2, 3]]
+    assert split_list([], [3, 6]) == []
+
+    print("All tests passed!")

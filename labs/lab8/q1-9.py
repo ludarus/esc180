@@ -8,7 +8,7 @@
 #   Base case: b == 0 -> return 0
 #   Recursive step: times(a, b) = a + times(a, b - 1)
 #
-# Part C: Call tree for times(2, 3)
+# part c: call tree for times(2, 3)
 #   times(2, 3)                    returns 2 + 2 + 2 + 0 = 6
 #   |
 #   +-- times(2, 2)                returns 2 + 2 + 0 = 4
@@ -34,7 +34,7 @@ def digit_sum(n):
     # raise NotImplementedError
     if n < 10:
         return n
-    return digit_sum(n//10) + n % 10
+    return digit_sum(n // 10) + n % 10
 
 
 # QUESTION 3. REMAINDER WITHOUT %, //, *, /
@@ -44,7 +44,7 @@ def remainder(a, b):
     # raise NotImplementedError
     if b > a:
         return a
-    return remainder(a-b, b)
+    return remainder(a - b, b)
 
 
 # QUESTION 4. LINEAR SEARCH
@@ -52,10 +52,12 @@ def remainder(a, b):
 # len() and slicing are allowed. Example: linear_search([5, 8, 2, 9], 2) returns 2.
 def linear_search(L, e):
     l = len(L)
+
     def recurse(L, e):
         if L[0] == e:
             return l - len(L)
         return recurse(L[1::], e)
+
     return recurse(L, e)
     # raise NotImplementedError
 
@@ -74,13 +76,14 @@ def interleave(L1, L2):
 # Reverse L in place. Do not use loops or slicing. Return nothing.
 # Hint: Write a helper function that calls itself. See the handout.
 def reverse_rec(L):
-    def recurse(L, l=0, r=len(L)-1):
+    def recurse(L, l=0, r=len(L) - 1):
         if r <= l:
-             return
+            return
         L[l], L[r] = L[r], L[l]
         l += 1
         r -= 1
         recurse(L, l, r)
+
     recurse(L)
     # raise NotImplementedError
 
@@ -116,6 +119,7 @@ def print_from_middle(L):
 # handout's prompt. Do not use loops. Check the test cases yourself too:
 # the handout says that LLMs can make mistakes in expected outputs.
 
+
 # PRACTICE PROBLEM 1 (easy). COUNT OCCURRENCES
 # Return the number of times e appears in the list L, recursively.
 #   count_occurrences([1, 2, 1, 3, 1], 1)    -> 3
@@ -128,6 +132,7 @@ def count_occurrences(L, e):
         if L[0] == e:
             count += 1
         return recurse(L[1::], count)
+
     return recurse(L, 0)
 
 
@@ -159,6 +164,7 @@ def is_palindrome_gemini(s):
         if s[l] != s[r]:
             return False
         return helper(l + 1, r - 1)
+
     return helper(0, len(s) - 1)
 
 
@@ -171,16 +177,18 @@ def is_palindrome_gemini(s):
 #   count_paths(1, 5)  -> 1
 def count_paths(rows, cols):
     count = 0
+
     def recurse(x, y):
         nonlocal count
         if x == cols and y == rows:
             count += 1
             return
         if x < cols:
-            recurse(x+1, y)
+            recurse(x + 1, y)
         if y < rows:
-            recurse(x, y+1)
-    recurse(1,1)
+            recurse(x, y + 1)
+
+    recurse(1, 1)
     return count
 
 
@@ -200,6 +208,7 @@ def count_paths_gemini(rows, cols):
 # Loops are allowed. Split L into sublists separated by any element of seps.
 # Example: split_list([1, 2, 6, 4, 5, 3, 7], [3, 6]) returns [[1, 2], [4, 5], [7]].
 # Hint: First write a helper that splits by one separator. See the handout.
+
 
 # the thing but one sep
 def _split_by_one(L, sep):
@@ -226,10 +235,8 @@ def split_list(L, seps):
     first_sep = seps[0]
     normalized = [first_sep if item in seps else item for item in L]
     return _split_by_one(normalized, first_sep)
-            
 
 
 if __name__ == "__main__":
     # Add tests here as you implement each question.
     pass
-

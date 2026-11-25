@@ -4,21 +4,27 @@
 # Implement and test one function at a time.
 
 # QUESTION 1. MULTIPLICATION WITHOUT *
-# Part A: Write down the base case and the recursive step for a times b.
-# Part C: Write down the call tree for times(2, 3).
-# Part D: Write down the worst-case runtime complexity in Big O notation.
+# Part A:
+#   Base case: b == 0 -> return 0
+#   Recursive step: times(a, b) = a + times(a, b - 1)
+#
+# Part C: Call tree for times(2, 3)
+#   times(2, 3)                    returns 2 + 2 + 2 + 0 = 6
+#   |
+#   +-- times(2, 2)                returns 2 + 2 + 0 = 4
+#       |
+#       +-- times(2, 1)            returns 2 + 0 = 2
+#           |
+#           +-- times(2, 0)        returns 0  (base case)
+#
+# Part D:  O(b)
 
 # Part B: Return a * b recursively, using only addition. b is a nonnegative
 # integer. Do not use loops, the * operator, or the math module.
 def times(a, b):
-    # raise NotImplementedError
-    if a == 1:
-        return b
-    if b == 1:
-        return a
-    if a == 0 or b == 0:
+    if b == 0:
         return 0
-    return times(a-1, b) + a
+    return a + times(a, b - 1)
 
 
 # QUESTION 2. SUM OF DIGITS
@@ -59,10 +65,9 @@ def linear_search(L, e):
 # Do not use loops.
 # Example: interleave([1, 2, 3], ["a", "b", "c"]) returns [1, "a", 2, "b", 3, "c"].
 def interleave(L1, L2):
-    if len(L1) == len(L2) == 1:
-        return [L1[0], L2[0]]
-    return [L1[0], L2[0]] + interleave(L1[1::], L2[1::])
-    # raise NotImplementedError
+    if len(L1) == 0:
+        return []
+    return [L1[0], L2[0]] + interleave(L1[1:], L2[1:])
 
 
 # QUESTION 6. REVERSING A LIST IN PLACE
@@ -117,7 +122,19 @@ def print_from_middle(L):
 #   count_occurrences([], 5)                 -> 0
 #   count_occurrences(["a", "b", "a"], "c")  -> 0
 def count_occurrences(L, e):
-    raise NotImplementedError
+    def recurse(L, count):
+        if not L:
+            return count
+        if L[0] == e:
+            count += 1
+        return recurse(L[1::], count)
+    return recurse(L, 0)
+
+
+def count_occurrences_gemini(L, e):
+    if not L:
+        return 0
+    return (1 if L[0] == e else 0) + count_occurrences_gemini(L[1:], e)
 
 
 # PRACTICE PROBLEM 2 (medium). PALINDROME
@@ -127,7 +144,22 @@ def count_occurrences(L, e):
 #   is_palindrome("ab")       -> False
 #   is_palindrome("")         -> True
 def is_palindrome(s):
-    raise NotImplementedError
+    if len(s) <= 1:
+        return True
+    if s[0] == s[-1]:
+        return is_palindrome(s[1:-1])
+    else:
+        return False
+
+
+def is_palindrome_gemini(s):
+    def helper(l, r):
+        if l >= r:
+            return True
+        if s[l] != s[r]:
+            return False
+        return helper(l + 1, r - 1)
+    return helper(0, len(s) - 1)
 
 
 # PRACTICE PROBLEM 3 (hard). GRID PATHS
@@ -138,26 +170,66 @@ def is_palindrome(s):
 #   count_paths(3, 3)  -> 6
 #   count_paths(1, 5)  -> 1
 def count_paths(rows, cols):
-    raise NotImplementedError
+    count = 0
+    def recurse(x, y):
+        nonlocal count
+        if x == cols and y == rows:
+            count += 1
+            return
+        if x < cols:
+            recurse(x+1, y)
+        if y < rows:
+            recurse(x, y+1)
+    recurse(1,1)
+    return count
+
+
+def count_paths_gemini(rows, cols):
+    if rows == 1 or cols == 1:
+        return 1
+    return count_paths_gemini(rows - 1, cols) + count_paths_gemini(rows, cols - 1)
+
+
+# all llm cases are correct. it is able to independently verify in its own env with tools
+# yes appropiate level
+# llms solution was less readable instantly to me, but that is inevitable, because i didnt write the code. probably more elegeant on average also
+# for learning - at solving problems. probably have a time limimt you have to spend struggling with the idea. there are ways of getting llms not to give you the answer. sometimes you just have to be paitent -- maybe tackle it after a walk or sleep. takes time
 
 
 # QUESTION 9. SPLITTING A LIST
 # Loops are allowed. Split L into sublists separated by any element of seps.
 # Example: split_list([1, 2, 6, 4, 5, 3, 7], [3, 6]) returns [[1, 2], [4, 5], [7]].
 # Hint: First write a helper that splits by one separator. See the handout.
-def split_list(L, seps):
+
+# the thing but one sep
+def _split_by_one(L, sep):
     res = []
-    i = 0
-    while i < len(L):
-        if i + seps > len(L) - 1:
-            res.append(L[i::])
+    current = []
+    for item in L:
+        if item == sep:
+            if current:
+                res.append(current)
+                current = []
         else:
-            res.append(L[i:i+seps])
-        i += seps
+            current.append(item)
+    if current:
+        res.append(current)
     return res
+
+
+# we make everyting one sep :think:
+def split_list(L, seps):
+    if not L:
+        return []
+    if not seps:
+        return [L[:]]
+    first_sep = seps[0]
+    normalized = [first_sep if item in seps else item for item in L]
+    return _split_by_one(normalized, first_sep)
             
 
 
 if __name__ == "__main__":
     # Add tests here as you implement each question.
     pass
+
